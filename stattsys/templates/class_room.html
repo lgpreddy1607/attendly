@@ -1,0 +1,8 @@
+<h2>Classroom List</h2>
+<ul>
+  {% for class in classes %}
+    <li>{{ class }}</li>
+  {% empty %}
+    <li>No classrooms available.</li>
+  {% endfor %}
+</ul>

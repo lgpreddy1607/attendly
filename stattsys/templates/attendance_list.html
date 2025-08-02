@@ -1,0 +1,8 @@
+<h2>Attendance Records</h2>
+<ul>
+  {% for record in attendance %}
+    <li>{{ record }}</li>
+  {% empty %}
+    <li>No attendance records found.</li>
+  {% endfor %}
+</ul>
