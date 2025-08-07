@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from .models import Student, ClassRoom, Attendance, Teacher
 from .forms import StudentForm
 from .forms import TeacherForm 
+from .forms import ClassRoomForm
 
 
 
@@ -11,50 +12,6 @@ from .forms import TeacherForm
 
 def home(request):
     return HttpResponse("Home Page")
-
-
-# def student_list(request):
-#     students = Student.objects.all()
-    """
-    View to display a list of all students in plain HTML.
-
-    - Fetches all Student objects from the database.
-    - Converts each Student object to string using __str__().
-    - Joins them with <br> tags to display line by line.
-    - Returns a simple HTML response.
-    """
-    # output = '<br>'.join([str(s) for s in students])
-    # return HttpResponse("Students:<br>" + output)
-
-
-
-# def add_student(request):
-#     if request.method == 'POST':
-#         form = StudentForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('student_list')
-#     else:
-#         form = StudentForm()
-    
-#     return render(request, 'add_student.html', {'form': form})
-
-
-
-# def class_room(request):
-#     classes = ClassRoom.objects.all()
-#     output = '<br>'.join([str(c) for c in classes])
-#     return HttpResponse("ClassRoom:<br>" + output)
-
-# def attendance_list(request):
-#     attendace = Attendance.objects.all()
-#     output = '<br>'.join([str(a) for a in attendace])
-#     return HttpResponse("Attendance:<br>" + output)
-
-# def teacher(request):
-#     teachers = Teacher.objects.all()
-#     output = '<br>'.join([str(t) for t in teachers])
-#     return HttpResponse("Teacher:<br>" + output)
 
 
 def student_list(request):
@@ -108,12 +65,7 @@ def delete_student(request, pk):
 
 
 # View to display all Teacher entries using a template
-# def teacher(request):
-#     """
-#     Renders a list of all teachers using teacher_list.html template.
-#     """
-#     teachers = Teacher.objects.all()
-#     return render(request, 'teacher_list.html', {'teachers': teachers})
+
 
 def teacher_list(request):
     teachers = Teacher.objects.all()
@@ -153,25 +105,45 @@ def teacher_delete(request,pk):
         return redirect('teacher_list')
     return render(request, 'teacher/teacher_confirm_delete.html', {'teacher':teacher})
 
-        
-
-
-
-
-
-
-
-
-
-
 
 # View to display all ClassRoom entries using a template
-def class_room(request):
+def classroom_list(request):
     """
-    Renders a list of all classrooms using class_room.html template.
+    Renders a list of all classrooms using classroom_list.html template.
     """
-    classes = ClassRoom.objects.all()
-    return render(request, 'class_room.html', {'classes': classes})
+    classrooms = ClassRoom.objects.all()
+    return render(request, 'classroom/classroom_list.html', {'classrooms': classrooms}) 
+
+def classroom_create(request):
+    if request.method == "POST":
+        form = ClassRoomForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('classroom_list')
+    else:
+        form = ClassRoomForm()
+    return render(request, 'classroom/classroom_form.html', {'form': form})
+        
+def classroom_update(request, pk):
+    classroom = get_object_or_404(ClassRoom, pk=pk)
+    if request.method == "POST":
+        form = ClassRoomForm(request.POST, instance=classroom)
+        if form.is_valid():
+            form.save()
+            return redirect('classroom_list')
+    else:
+        form = ClassRoomForm(instance=classroom)
+    return render(request, 'classroom/classroom_form.html', {'form':form})
+
+def classroom_delete(request, pk):
+    classroom = get_object_or_404(ClassRoom, pk=pk)
+    if request.method == "POST":
+        classroom.delete()
+        return redirect('classroom_list')
+    return render(request, 'classroom/classroom_confirm_delete.html', {'classroom':classroom})
+
+
+
 
 
 # View to display all Attendance entries using a template

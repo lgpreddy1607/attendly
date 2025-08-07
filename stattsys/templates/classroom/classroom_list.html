@@ -1,0 +1,20 @@
+<h1>ClassRoom List</h1>
+
+<a href="{% url 'classroom_add' %}">Add New ClassRoom</a>
+
+<ul>
+  {% for classroom in classrooms %}
+    <li>
+      {{ classroom.name }} - {{ classroom.section }} - 
+      {{ classroom.teacher }}
+      |
+      <a href="{% url 'classroom_edit' classroom.pk %}">Edit</a>
+      |
+      <a href="{% url 'classroom_delete' classroom.pk %}">Delete</a>
+    </li>
+  {% empty %}
+    <li>No classrooms available.</li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'home' %}">Back to Home</a>

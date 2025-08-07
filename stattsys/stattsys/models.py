@@ -12,6 +12,7 @@ class Teacher(models.Model):
 
 class ClassRoom(models.Model):
     name = models.CharField(max_length=100)  # Example: "10-A"
+    section = models.CharField(max_length=20, null=True)
     teacher = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):

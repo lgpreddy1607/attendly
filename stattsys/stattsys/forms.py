@@ -11,4 +11,9 @@ class TeacherForm(forms.ModelForm):
     class Meta:
         model = Teacher
         fields = ['name', 'email','subject']
-        
+
+
+class ClassRoomForm(forms.ModelForm):
+    class Meta:
+        model = ClassRoom
+        fields = ['name', 'section', 'teacher']
