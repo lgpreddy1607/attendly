@@ -1,12 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
+from .models import Student, ClassRoom, Attendance, Teacher
 from .forms import StudentForm
+from .forms import TeacherForm 
 
 
-from .models import Student
-from .models import ClassRoom
-from .models import Teacher
-from .models import Attendance
+
+
 
 
 def home(request):
@@ -69,7 +69,6 @@ def student_list(request):
     return render(request, 'student_list.html', {'students': students})  # Render the template with context    
 
 
-
 # View to handle creating a new student
 def add_student(request):
     """
@@ -84,7 +83,6 @@ def add_student(request):
         form = StudentForm()
     
     return render(request, 'add_student.html', {'form': form})
-
 
 
 def edit_student(request, pk):
@@ -108,6 +106,65 @@ def delete_student(request, pk):
         return redirect('student_list')
     return render(request, 'delete_student.html', {'student': student})
 
+
+# View to display all Teacher entries using a template
+# def teacher(request):
+#     """
+#     Renders a list of all teachers using teacher_list.html template.
+#     """
+#     teachers = Teacher.objects.all()
+#     return render(request, 'teacher_list.html', {'teachers': teachers})
+
+def teacher_list(request):
+    teachers = Teacher.objects.all()
+    return render(request, 'teacher/teacher_list.html', {'teachers': teachers})
+
+# Create view
+
+def teacher_create(request):
+    if request.method == 'POST':
+        form = TeacherForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('teacher_list')
+    else:
+        form = TeacherForm()
+    return render(request, 'teacher/teacher_form.html', {'form': form})
+
+# Update view
+
+def teacher_update(request, pk):
+    teacher = get_object_or_404(Teacher, pk=pk)
+    if request.method == 'POST':
+        form = TeacherForm(request.POST, instance=teacher)
+        if form.is_valid():
+            form.save()
+            return redirect('teacher_list')
+    else:
+        form = TeacherForm(instance=teacher)
+    return render(request, 'teacher/teacher_form.html', {'form':form})
+
+# Delete view
+
+def teacher_delete(request,pk):
+    teacher = get_object_or_404(Teacher, pk=pk)
+    if request.method == 'POST':
+        teacher.delete()
+        return redirect('teacher_list')
+    return render(request, 'teacher/teacher_confirm_delete.html', {'teacher':teacher})
+
+        
+
+
+
+
+
+
+
+
+
+
+
 # View to display all ClassRoom entries using a template
 def class_room(request):
     """
@@ -126,10 +183,3 @@ def attendance_list(request):
     return render(request, 'attendance_list.html', {'attendance': attendance})
 
 
-# View to display all Teacher entries using a template
-def teacher(request):
-    """
-    Renders a list of all teachers using teacher_list.html template.
-    """
-    teachers = Teacher.objects.all()
-    return render(request, 'teacher_list.html', {'teachers': teachers})
