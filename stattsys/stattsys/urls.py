@@ -15,7 +15,11 @@ urlpatterns = [
     path('classrooms/add/', views.classroom_create, name = 'classroom_add'),
     path('classroom/<int:pk>/edit/', views.classroom_update, name = 'classroom_edit'),
     path('classrooms/<int:pk>delete/', views.classroom_delete, name = 'classroom_delete'),
-    path('attendance/', views.attendance_list, name='attendance_list'),
+    path('attendances/', views.attendance_list, name='attendance_list'),
+    path('attendances/add/', views.attendance_create, name = 'attendance_add'),
+    path('attendances/<int:pk>/edit/', views.attendance_update, name = 'attendance_edit'),
+    path('attendances/<int:pk>/delete/', views.attendance_delete, name = 'attendance_delete'),
+
    
 
 ]

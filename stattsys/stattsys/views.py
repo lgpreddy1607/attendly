@@ -4,6 +4,7 @@ from .models import Student, ClassRoom, Attendance, Teacher
 from .forms import StudentForm
 from .forms import TeacherForm 
 from .forms import ClassRoomForm
+from .forms import AttendanceForm
 
 
 
@@ -147,11 +148,45 @@ def classroom_delete(request, pk):
 
 
 # View to display all Attendance entries using a template
+
+# View: List all attendance records
 def attendance_list(request):
     """
     Renders a list of all attendance records using attendance_list.html template.
     """
-    attendance = Attendance.objects.all()
-    return render(request, 'attendance_list.html', {'attendance': attendance})
+    attendances = Attendance.objects.all().order_by('-date')
+    return render(request, 'attendance/attendance_list.html', {'attendances': attendances})
+
+# View: Create new attendance
+def attendance_create(request):
+    if request.method == 'POST':
+        form = AttendanceForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('attendance_list')
+    else:
+        form = AttendanceForm()
+    return render(request, 'attendance/attendance_form.html', {'form' : form})
+
+# Update attendance
+def attendance_update(request,pk):
+    attendance = get_object_or_404(Attendance, pk=pk)
+    if request.method == 'POST':
+        form = AttendanceForm(request.POST, instance=attendance)
+        if form.is_valid():
+            form.save()
+            return redirect('attendance_list')
+    else:
+        form = AttendanceForm(instance=attendance)
+    return render(request, 'attendance/attendance_form.html', {'form' : form})
+
+#View: Delete attendance
+def attendance_delete(request,pk):
+    attendance = get_object_or_404(Attendance, pk=pk)
+    if request.method == 'POST':
+        attendance.delete()
+        return redirect('attendance_list')
+    return (request, 'attendance/attendance_confirm_delete.html', {'attendance': attendance})
+
 
 

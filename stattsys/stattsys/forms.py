@@ -17,3 +17,11 @@ class ClassRoomForm(forms.ModelForm):
     class Meta:
         model = ClassRoom
         fields = ['name', 'section', 'teacher']
+
+class AttendanceForm(forms.ModelForm):
+    class Meta:
+        model = Attendance
+        fields = ['student', 'date', 'status']
+        widgets = {
+            'date': forms.DateInput(attrs={'type':'date'}),
+        }
