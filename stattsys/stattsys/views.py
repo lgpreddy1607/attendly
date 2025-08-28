@@ -5,6 +5,9 @@ from .forms import StudentForm
 from .forms import TeacherForm 
 from .forms import ClassRoomForm
 from .forms import AttendanceForm
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+
 
 
 
@@ -12,70 +15,98 @@ from .forms import AttendanceForm
 
 
 def home(request):
-    return HttpResponse("Home Page")
+    return render(request, "home.html")
 
-
+@login_required
 def student_list(request):
-    """
-    View to display a list of all students using a template.
-
-    - Retrieves all Student objects from the database.
-    - Passes the student list to the 'student_list.html' template.
-    - Renders and returns the HTML response to the client.
-    """
-    students = Student.objects.all()  # Fetch all students from the database
-    return render(request, 'student_list.html', {'students': students})  # Render the template with context    
+    teacher = _get_teacher_for_user(request.user)
+    if teacher and not (request.user.is_staff or request.user.is_superuser):
+        students = Student.objects.filter(classroom__teacher=teacher)
+    else:
+        students = Student.objects.all()
+    return render(request, 'student/student_list.html', {'students': students})
 
 
-# View to handle creating a new student
+@login_required
 def add_student(request):
-    """
-    Renders a form to add a new student. On POST, validates and saves the form.
-    """
+    teacher = _get_teacher_for_user(request.user)
+
+    # If teacher (non-staff) is adding, limit classroom choices to their classrooms.
     if request.method == 'POST':
         form = StudentForm(request.POST)
+        if teacher and not (request.user.is_staff or request.user.is_superuser):
+            form.fields['classroom'].queryset = ClassRoom.objects.filter(teacher=teacher)
         if form.is_valid():
             form.save()
-            return redirect('student_list')  # Redirect to list of students after save
+            return redirect('student_list')
     else:
         form = StudentForm()
-    
-    return render(request, 'add_student.html', {'form': form})
+        if teacher and not (request.user.is_staff or request.user.is_superuser):
+            form.fields['classroom'].queryset = ClassRoom.objects.filter(teacher=teacher)
+
+    return render(request, 'student/add_student.html', {'form': form})
 
 
+@login_required
 def edit_student(request, pk):
-    student = get_object_or_404(Student, pk=pk)
+    teacher = _get_teacher_for_user(request.user)
+
+    # If teacher -> ensure student belongs to that teacher's classroom
+    if teacher and not (request.user.is_staff or request.user.is_superuser):
+        student = get_object_or_404(Student, pk=pk, classroom__teacher=teacher)
+    else:
+        student = get_object_or_404(Student, pk=pk)
 
     if request.method == 'POST':
         form = StudentForm(request.POST, instance=student)
+        if teacher and not (request.user.is_staff or request.user.is_superuser):
+            form.fields['classroom'].queryset = ClassRoom.objects.filter(teacher=teacher)
         if form.is_valid():
             form.save()
             return redirect('student_list')
     else:
         form = StudentForm(instance=student)
+        if teacher and not (request.user.is_staff or request.user.is_superuser):
+            form.fields['classroom'].queryset = ClassRoom.objects.filter(teacher=teacher)
 
-    return render(request, 'edit_student.html', {'form': form})
+    return render(request, 'student/edit_student.html', {'form': form})
 
 
+@login_required
 def delete_student(request, pk):
-    student = get_object_or_404(Student, pk=pk)
+    teacher = _get_teacher_for_user(request.user)
+
+    if teacher and not (request.user.is_staff or request.user.is_superuser):
+        student = get_object_or_404(Student, pk=pk, classroom__teacher=teacher)
+    else:
+        student = get_object_or_404(Student, pk=pk)
+
     if request.method == 'POST':
         student.delete()
         return redirect('student_list')
-    return render(request, 'delete_student.html', {'student': student})
+
+    return render(request, 'student/delete_student.html', {'student': student})
 
 
 # View to display all Teacher entries using a template
 
 
+@login_required
 def teacher_list(request):
+    """Only staff/superusers can see the list of Teachers"""
+    if not (request.user.is_staff or request.user.is_superuser):
+        raise PermissionDenied
     teachers = Teacher.objects.all()
     return render(request, 'teacher/teacher_list.html', {'teachers': teachers})
 
-# Create view
 
+@login_required
 def teacher_create(request):
-    if request.method == 'POST':
+    """Only staff/superusers can create new Teachers"""
+    if not (request.user.is_staff or request.user.is_superuser):
+        raise PermissionDenied
+    
+    if request.method == "POST":
         form = TeacherForm(request.POST)
         if form.is_valid():
             form.save()
@@ -84,38 +115,59 @@ def teacher_create(request):
         form = TeacherForm()
     return render(request, 'teacher/teacher_form.html', {'form': form})
 
-# Update view
 
+@login_required
 def teacher_update(request, pk):
+    """Only staff/superusers can update Teachers"""
+    if not (request.user.is_staff or request.user.is_superuser):
+        raise PermissionDenied
+    
     teacher = get_object_or_404(Teacher, pk=pk)
-    if request.method == 'POST':
+    if request.method == "POST":
         form = TeacherForm(request.POST, instance=teacher)
         if form.is_valid():
             form.save()
             return redirect('teacher_list')
     else:
         form = TeacherForm(instance=teacher)
-    return render(request, 'teacher/teacher_form.html', {'form':form})
+    return render(request, 'teacher/teacher_form.html', {'form': form})
 
-# Delete view
 
-def teacher_delete(request,pk):
+@login_required
+def teacher_delete(request, pk):
+    """Only staff/superusers can delete Teachers"""
+    if not (request.user.is_staff or request.user.is_superuser):
+        raise PermissionDenied
+    
     teacher = get_object_or_404(Teacher, pk=pk)
-    if request.method == 'POST':
+    if request.method == "POST":
         teacher.delete()
         return redirect('teacher_list')
-    return render(request, 'teacher/teacher_confirm_delete.html', {'teacher':teacher})
+    return render(request, 'teacher/teacher_confirm_delete.html', {'teacher': teacher})
+
+# Helper to fetch Teacher tied to the current user
+def _get_teacher_for_user(user):
+    from .models import Teacher
+    return Teacher._get_teacher_for_user(user)
 
 
 # View to display all ClassRoom entries using a template
+@login_required
 def classroom_list(request):
-    """
-    Renders a list of all classrooms using classroom_list.html template.
-    """
-    classrooms = ClassRoom.objects.all()
-    return render(request, 'classroom/classroom_list.html', {'classrooms': classrooms}) 
+    teacher = _get_teacher_for_user(request.user)
+    if teacher and not (request.user.is_staff or request.user.is_superuser):
+        classrooms = ClassRoom.objects.filter(teacher=teacher)
+    else:
+        classrooms = ClassRoom.objects.all()
+    return render(request, 'classroom/classroom_list.html', {'classrooms': classrooms})
 
+
+@login_required
 def classroom_create(request):
+    # Creating classrooms is usually an admin/staff action.
+    if not (request.user.is_staff or request.user.is_superuser):
+        raise PermissionDenied
+
     if request.method == "POST":
         form = ClassRoomForm(request.POST)
         if form.is_valid():
@@ -124,9 +176,18 @@ def classroom_create(request):
     else:
         form = ClassRoomForm()
     return render(request, 'classroom/classroom_form.html', {'form': form})
-        
+
+
+@login_required
 def classroom_update(request, pk):
-    classroom = get_object_or_404(ClassRoom, pk=pk)
+    teacher = _get_teacher_for_user(request.user)
+
+    # If teacher (non-staff) updating, ensure they own that classroom
+    if teacher and not (request.user.is_staff or request.user.is_superuser):
+        classroom = get_object_or_404(ClassRoom, pk=pk, teacher=teacher)
+    else:
+        classroom = get_object_or_404(ClassRoom, pk=pk)
+
     if request.method == "POST":
         form = ClassRoomForm(request.POST, instance=classroom)
         if form.is_valid():
@@ -134,59 +195,96 @@ def classroom_update(request, pk):
             return redirect('classroom_list')
     else:
         form = ClassRoomForm(instance=classroom)
-    return render(request, 'classroom/classroom_form.html', {'form':form})
 
+    return render(request, 'classroom/classroom_form.html', {'form': form})
+
+
+@login_required
 def classroom_delete(request, pk):
-    classroom = get_object_or_404(ClassRoom, pk=pk)
+    teacher = _get_teacher_for_user(request.user)
+
+    if teacher and not (request.user.is_staff or request.user.is_superuser):
+        classroom = get_object_or_404(ClassRoom, pk=pk, teacher=teacher)
+    else:
+        classroom = get_object_or_404(ClassRoom, pk=pk)
+
     if request.method == "POST":
         classroom.delete()
         return redirect('classroom_list')
-    return render(request, 'classroom/classroom_confirm_delete.html', {'classroom':classroom})
 
-
-
+    return render(request, 'classroom/classroom_confirm_delete.html', {'classroom': classroom})
 
 
 # View to display all Attendance entries using a template
 
 # View: List all attendance records
+@login_required
 def attendance_list(request):
-    """
-    Renders a list of all attendance records using attendance_list.html template.
-    """
-    attendances = Attendance.objects.all().order_by('-date')
+    teacher = _get_teacher_for_user(request.user)
+    if teacher and not (request.user.is_staff or request.user.is_superuser):
+        attendances = Attendance.objects.filter(student__classroom__teacher=teacher).order_by('-date')
+    else:
+        attendances = Attendance.objects.all().order_by('-date')
     return render(request, 'attendance/attendance_list.html', {'attendances': attendances})
 
-# View: Create new attendance
+
+@login_required
 def attendance_create(request):
+    teacher = _get_teacher_for_user(request.user)
+
     if request.method == 'POST':
         form = AttendanceForm(request.POST)
+        if teacher and not (request.user.is_staff or request.user.is_superuser):
+            form.fields['student'].queryset = Student.objects.filter(classroom__teacher=teacher)
         if form.is_valid():
             form.save()
             return redirect('attendance_list')
     else:
         form = AttendanceForm()
+        if teacher and not (request.user.is_staff or request.user.is_superuser):
+            form.fields['student'].queryset = Student.objects.filter(classroom__teacher=teacher)
+
     return render(request, 'attendance/attendance_form.html', {'form' : form})
 
-# Update attendance
-def attendance_update(request,pk):
-    attendance = get_object_or_404(Attendance, pk=pk)
+
+@login_required
+def attendance_update(request, pk):
+    teacher = _get_teacher_for_user(request.user)
+
+    if teacher and not (request.user.is_staff or request.user.is_superuser):
+        attendance = get_object_or_404(Attendance, pk=pk, student__classroom__teacher=teacher)
+    else:
+        attendance = get_object_or_404(Attendance, pk=pk)
+
     if request.method == 'POST':
         form = AttendanceForm(request.POST, instance=attendance)
+        if teacher and not (request.user.is_staff or request.user.is_superuser):
+            form.fields['student'].queryset = Student.objects.filter(classroom__teacher=teacher)
         if form.is_valid():
             form.save()
             return redirect('attendance_list')
     else:
         form = AttendanceForm(instance=attendance)
+        if teacher and not (request.user.is_staff or request.user.is_superuser):
+            form.fields['student'].queryset = Student.objects.filter(classroom__teacher=teacher)
+
     return render(request, 'attendance/attendance_form.html', {'form' : form})
 
-#View: Delete attendance
-def attendance_delete(request,pk):
-    attendance = get_object_or_404(Attendance, pk=pk)
+
+@login_required
+def attendance_delete(request, pk):
+    teacher = _get_teacher_for_user(request.user)
+
+    if teacher and not (request.user.is_staff or request.user.is_superuser):
+        attendance = get_object_or_404(Attendance, pk=pk, student__classroom__teacher=teacher)
+    else:
+        attendance = get_object_or_404(Attendance, pk=pk)
+
     if request.method == 'POST':
         attendance.delete()
         return redirect('attendance_list')
-    return (request, 'attendance/attendance_confirm_delete.html', {'attendance': attendance})
 
+    # Fixed: use render, not a tuple
+    return render(request, 'attendance/attendance_confirm_delete.html', {'attendance': attendance})
 
 

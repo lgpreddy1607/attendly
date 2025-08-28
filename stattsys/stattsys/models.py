@@ -1,13 +1,20 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Teacher(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=100)
     email = models.EmailField(blank=True, null=True)
     subject = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.name
+    
+    @staticmethod
+    def _get_teacher_for_user(user):
+        """ Return the Teacher object tied to this User, or None """
+        return getattr(user, 'teacher', None)
 
 
 class ClassRoom(models.Model):

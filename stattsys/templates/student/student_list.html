@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 <h2>All Students</h2>
 
 <ul>
@@ -5,7 +8,8 @@
     <li>
         {{student.name}} - {{ student.roll_no}} - {{student.gender}}
         <a href = "{% url 'edit_student' student.pk %}">Edit</a> |
-        <a href = "{% url 'delete-student' student.pk %}">Delete</a>
+        <a href = "{% url 'delete_student' student.pk %}">Delete</a>
     </li>
   {% endfor %}
 </ul>
+{% endblock %}

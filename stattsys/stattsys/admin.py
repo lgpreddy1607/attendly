@@ -35,6 +35,6 @@ class AttendanceAdmin(admin.ModelAdmin):
 #admin.site.register(Teacher)
 @admin.register(Teacher)
 class TeacherAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'subject')
+    list_display = ('name', 'email', 'subject','user')
     search_fields = ('name', 'subject')
     #list_filter = ('name', 'subject')

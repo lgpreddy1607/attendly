@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 <h1>{% if form.instance.pk %}Edit{% else %}Add{% endif %} ClassRoom</h1>
 
 <form method="post">
@@ -7,3 +10,4 @@
 </form>
 
 <a href="{% url 'classroom_list' %}">Back to ClassRoom List</a>
+{% endblock %}

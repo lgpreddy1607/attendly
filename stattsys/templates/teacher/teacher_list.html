@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 <h2> Teachers List</h2>
 <a href="{% url 'teacher_create' %}"> Add New Teacher</a>
 
@@ -16,3 +19,4 @@
   </tr>
   {% endfor %}
 </table>
+{% endblock %}

@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 <h1>ClassRoom List</h1>
 
 <a href="{% url 'classroom_add' %}">Add New ClassRoom</a>
@@ -18,3 +21,4 @@
 </ul>
 
 <a href="{% url 'home' %}">Back to Home</a>
+{% endblock %}

@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 <!-- stattsys/templates/stattsys/teacher_confirm_delete.html -->
 <h2>Delete Teacher</h2>
 <p>Are you sure you want to delete "{{ teacher.name }}"?</p>
@@ -8,3 +11,4 @@
 </form>
 
 <a href="{% url 'teacher_list' %}">Cancel</a>
+{% endblock %}

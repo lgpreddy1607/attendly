@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 <h2>Classroom List</h2>
 <ul>
   {% for class in classes %}
@@ -6,3 +9,4 @@
     <li>No classrooms available.</li>
   {% endfor %}
 </ul>
+{% endblock %}

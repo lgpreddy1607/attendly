@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 <h1>Attendance Records</h1>
 
 <a href="{% url 'attendance_add' %}">Add New Attendance</a>
@@ -17,3 +20,4 @@
 </ul>
 
 <a href="{% url 'home' %}">Back to Home</a>
+{% endblock %}

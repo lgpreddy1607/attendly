@@ -1,0 +1,20 @@
+<header>
+  {% if user.is_authenticated %}
+    <nav>
+      <a href="{% url 'home' %}">Home</a> |
+      <a href="{% url 'student_list' %}">Students</a> |
+      <a href="{% url 'classroom_list' %}">Classrooms</a> |
+      <a href="{% url 'attendance_list' %}">Attendance</a>
+      {% if user.is_staff or user.is_superuser %}
+        | <a href="{% url 'teacher_list' %}">Teachers</a>
+      {% endif %}
+    </nav>
+    <form method="post" action="{% url 'logout' %}" style="display:inline; margin-left:8px;">
+      {% csrf_token %}
+      <button type="submit">Logout</button>
+    </form>
+  {% else %}
+    <a href="{% url 'login' %}">Login</a>
+  {% endif %}
+  <hr>
+</header>

@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 <!-- delete_student.html -->
 
 <h2>Delete Student</h2>
@@ -9,3 +12,4 @@
     <button type="submit">Yes, delete</button>
     <a href="{% url 'student_list' %}">Cancel</a>
 </form>
+{% endblock %}
