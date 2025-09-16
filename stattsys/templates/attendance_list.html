@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
 <h2>Attendance Records</h2>
 <ul>
   {% for record in attendance %}
@@ -6,3 +9,4 @@
     <li>No attendance records found.</li>
   {% endfor %}
 </ul>
+{% endblock %}
